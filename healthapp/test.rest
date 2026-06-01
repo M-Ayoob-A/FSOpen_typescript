@@ -1,0 +1,13 @@
+POST http://localhost:3003/exercises
+content-type: application/json
+
+{
+    "daily_exercises": [1, 0, 2, 4.5, 0, 3, 1, 0, 4],
+    "target": 2
+}
+
+###
+GET http://localhost:3001/api/persons
+###
+GET http://localhost:3001/api/persons/692941a26b6fa68490fbd3e0
+###
