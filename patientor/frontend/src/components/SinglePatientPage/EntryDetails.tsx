@@ -59,6 +59,7 @@ const HospitalEntryDetails = ({ e, diagnoses }: { e: HospitalEntry, diagnoses: D
       }
     </Box>
     <Typography sx={{ fontStyle: 'italic' }} >{e.description}</Typography>
+    <Typography>Diagnosis by {e.specialist}</Typography>
     {
       e.diagnosisCodes &&
       <div>
@@ -88,6 +89,7 @@ const OccupationalHealthEntryDetails = ({ e, diagnoses }: { e: OccupationalHealt
       </div>
     </Box>
     <Typography sx={{ fontStyle: 'italic' }} >{e.description}</Typography>
+    <Typography>Diagnosis by {e.specialist}</Typography>
     {
       e.diagnosisCodes &&
       <div>

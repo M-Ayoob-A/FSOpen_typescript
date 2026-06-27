@@ -101,7 +101,7 @@ export type EntryWithoutId = UnionOmit<Entry, 'id'>;
 const BaseEntrySchema = z.object({
   //id: z.string(),
   description: z.string().trim().min(1, { error: "Please submit a valid description" }),
-  date: z.iso.date(),
+  date: z.iso.date("Please enter a valid date for the entry"),
   specialist: z.string().trim().min(1, { error: "Please enter a valid specialist name" }),
   diagnosisCodes: z.array(z.string()).optional()
 });
@@ -118,7 +118,7 @@ export const HealthCheckEntrySchema = BaseEntrySchema.extend({
 
 export const HospitalEntrySchema = BaseEntrySchema.extend({
   discharge: z.object({
-    date: z.iso.date(),
+    date: z.iso.date("Please enter a valid discharge date"),
     criteria: z.string().trim().min(1, { error: "Please specify discharge criteria" })
   }),
   type: z.literal("Hospital")
@@ -126,8 +126,8 @@ export const HospitalEntrySchema = BaseEntrySchema.extend({
 
 export const OccupationalHealthcareEntrySchema = BaseEntrySchema.extend({
   sickLeave: z.object({
-    startDate: z.iso.date(),
-    endDate: z.iso.date()
+    startDate: z.iso.date("Please enter a valid start date for the sick leave"),
+    endDate: z.iso.date("Please enter a valid end date for the sick leave")
   }).optional(),
   employerName: z.string().trim().min(1, { error: "Please specify the employer name" }),
   type: z.literal("OccupationalHealthcare")

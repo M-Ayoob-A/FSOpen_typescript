@@ -1,81 +1,72 @@
-import { Alert, Box, Button, TextField, Typography } from "@mui/material";
-import { SyntheticEvent, useState } from "react";
-import { DraftHCEntry } from "../../types";
-//import NumberField from "./NumberField";
+import { Alert, Box, Button, InputLabel, Typography, MenuItem, Select, FormControl } from "@mui/material";
+import { useState } from "react";
+import { Patient, DraftEntry, Diagnosis } from "../../types";
+import { isAxiosError } from "axios";
+import patientService from "../../services/patients";
+import HealthCheckEntryForm from "./entryforms/HealthCheckEntryForm";
+import HospitalEntryForm from "./entryforms/HospitalEntryForm";
+import OccupationalHealthcareForm from "./entryforms/OccupationalHealthcareForm";
 
-const NewEntryForm =  ({ toggle, onAdd, err } : { toggle: () => void, onAdd: (newEntryDetails: DraftHCEntry) => void, err: string }) => {
 
-  const [date, setDate] = useState('');
-  const [description, setDescription] = useState('');
-  const [specialist, setSpecialist] = useState('');
-  const [healthCheck, setHealthCheck] = useState('');
-  const [diagnosisCodes, setDiagnosisCodes] = useState('');
+const NewEntryForm =  ({ toggle, patient, setPatient, diagnoses } : { toggle: () => void, patient: Patient, setPatient: React.Dispatch<React.SetStateAction<Patient | undefined>>, diagnoses: Diagnosis[] }) => {
 
-  const onSubmit = (event : SyntheticEvent) => {
-    event.preventDefault();
-    onAdd({
-      type: "HealthCheck",
-      healthCheckRating: healthCheck,
-      description: description,
-      date: date,
-      specialist: specialist
-    });
+  const [errorMsg, setErrorMsg] = useState('');
+  const [entryType, setEntryType] = useState('HealthCheck');
+
+  const notify = (msg: string) => {
+    setErrorMsg(msg);
+    setTimeout(() => {
+      setErrorMsg('');
+    }, 4000);
+  };
+
+  const onSubmit = async (newEntryDetails: DraftEntry) => {
+    try {
+      const newEntry = await patientService.addEntry(patient.id, newEntryDetails);
+      if (patient) setPatient({ ...patient, entries: patient.entries.concat(newEntry) });
+    } catch (e: unknown) {
+      if (isAxiosError(e) && typeof e.response?.data.error === "string") {
+        notify(e.response?.data.error);
+        //else notify(e.message);
+      }
+      else if (e instanceof Error) notify(e.message);
+
+      throw new Error;
+    }
+  };
+
+  const renderEntryForm = () => {
+    switch (entryType) {
+      case "HealthCheck":
+        return <HealthCheckEntryForm submit={onSubmit} diagnoses={diagnoses} /> ;
+      case "Hospital":
+        return <HospitalEntryForm submit={onSubmit} diagnoses={diagnoses}/>;
+      case "OccupationalHealthcare":
+        return <OccupationalHealthcareForm submit={onSubmit} diagnoses={diagnoses}/>;
+    }
   };
   
-  return (<Box sx={{ border: '2px dashed black', padding: '17px 17px 17px 17px' }}>
-    <Typography variant="h6">New HealthCheck Entry</Typography>
-    { err && <Alert severity="error">Invalid Input: {err}</Alert> }
-    <form onSubmit={onSubmit}>
-      <TextField 
-        value={date}
-        label="Date"
+  return (<Box sx={{ border: '2px dashed black', padding: '17px 17px 17px 17px', marginBottom: '20vh' }}>
+    <Typography variant="h6">New Entry</Typography>
+    { errorMsg && <Alert severity="error">Invalid Input: {errorMsg}</Alert> }
+    <FormControl variant="outlined" sx={{ width: 'stretch', margin: '10px auto' }} >
+      <InputLabel id="typeSelect">Entry Type</InputLabel>
+      <Select
+        labelId="typeSelect"
+        value={entryType}
+        onChange={({ target }) => setEntryType(target.value)}
         sx={{ width: 'stretch', margin: '10px auto' }}
-        onChange={({ target }) => setDate(target.value)}
-      />
-      <TextField 
-        value={description}
-        label="Description"
-        sx={{ width: 'stretch', margin: '10px auto' }}
-        onChange={({ target }) => setDescription(target.value)}
-      />
-      <TextField 
-        value={specialist}
-        label="Specialist"
-        sx={{ width: 'stretch', margin: '10px auto' }}
-        onChange={({ target }) => setSpecialist(target.value)}
-      />
-      <TextField 
-        value={healthCheck}
-        label="Health Check Rating (0-3)"
-        sx={{ width: 'stretch', margin: '10px auto' }}
-        onChange={({ target }) => setHealthCheck(target.value)}
-      />
-      
-      <TextField 
-        value={diagnosisCodes}
-        label="Diagnosis Codes (comma-separated)"
-        sx={{ width: 'stretch', margin: '10px auto' }}
-        onChange={({ target }) => setDiagnosisCodes(target.value)}
-      />
-
-      <Box sx={{ display: 'flex', flexDirection: 'row' }} >
-        <Button type="submit" variant="contained" >ADD</Button>
-        <Button onClick={toggle}>CANCEL</Button>
-      </Box>
-    </form>
-    
+      >
+        <MenuItem value="HealthCheck">Health Check</MenuItem>
+        <MenuItem value="Hospital">Hospital</MenuItem>
+        <MenuItem value="OccupationalHealthcare">Occupational Healthcare</MenuItem>
+      </Select>
+    </FormControl>
+    {renderEntryForm()}
+    <Box sx={{ display: 'flex' }} >
+      <Button variant="contained" color="error" sx={{ margin: '5px auto', width: '150px' }} onClick={toggle} >Cancel</Button>
+    </Box>
   </Box>);
 };
 
 export default NewEntryForm;
-
-/**
- * base ui number field
- * <NumberField 
-        label="Health Check Rating (0-3)"
-        min={0} 
-        max={4}
-        value={healthCheck}
-        onValueChange={(value) => setHealthCheck(value ? value : 0)}
-      />
- */

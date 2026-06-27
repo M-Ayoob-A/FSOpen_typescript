@@ -30,7 +30,7 @@ const HealthCheckRating = {
   CriticalRisk: 3,
 } as const;
 
-type HealthCheckRating = typeof HealthCheckRating[keyof typeof HealthCheckRating];
+export type HealthCheckRating = typeof HealthCheckRating[keyof typeof HealthCheckRating];
 
 export interface HealthCheckEntry extends BaseEntry {
   type: "HealthCheck";
@@ -65,15 +65,30 @@ export type Entry =
   | OccupationalHealthcareEntry
   | HealthCheckEntry;
 
-export interface DraftHCEntry {
-  description: string;
-  date: string;
-  specialist: string;
-  diagnosisCodes?: string;
-  type: "HealthCheck";
-  healthCheckRating: string;
-}
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////// ENTRY TYPES FOR FORMS - NO ID, ALL FIELDS ARE STRINGS /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Should look to change this into simpler defs - just using the union of the actual types, rather than
+// having a draft entries. The only change would be that healthcheckrating should be configured with the
+// form, i.e. it should have the healthcheck type   
+/*export type DraftHCEntry = Omit<HealthCheckEntry, "id">;
+
+export type DraftHospEntry = Omit<HospitalEntry, "id">;
+export type DraftOccupHCEntry = Omit<OccupationalHealthcareEntry, "id">;
+
+export type DraftEntry =
+  | DraftHCEntry
+  | DraftHospEntry
+  | DraftOccupHCEntry;
+*/
+// Define special omit for unions
+type UnionOmit<T, K extends string | number | symbol> = T extends unknown ? Omit<T, K> : never;
+// Define Entry without the 'id' property
+export type DraftEntry = UnionOmit<Entry, 'id'>;
 
 //////////////////////////// PATIENT DEF //////////////////////////
 
